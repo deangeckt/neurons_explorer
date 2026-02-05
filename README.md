@@ -1,6 +1,6 @@
 # <img src="https://github.com/user-attachments/assets/02590b93-04b6-4685-8db7-34be9a607554" alt="logo192" width="45" />  Neuron SWC Editor
 
-[![Online Editor](https://github.com/deangeckt/swc_editor/actions/workflows/pages/pages-build-deployment/badge.svg)](https://deangeckt.github.io/swc_editor/)
+[![Online Editor](https://github.com/deangeckt/swc_editor/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/deangeckt/swc_editor/actions)
 [![GitHub stars](https://img.shields.io/github/stars/deangeckt/swc_editor?style=social)](https://github.com/deangeckt/swc_editor/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/deangeckt/swc_editor)](https://github.com/deangeckt/swc_editor/issues)
 
