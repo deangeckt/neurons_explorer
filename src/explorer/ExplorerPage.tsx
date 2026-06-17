@@ -173,6 +173,7 @@ const ExplorerPage: React.FC = () => {
     const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
     const [dstCount, setDstCount] = useState(DEFAULT_DST_COUNT);
     const [renderStyles, setRenderStyles] = useState<Record<NeuronRole, RenderStyle>>(DEFAULT_STYLES);
+    const [cameraKey, setCameraKey] = useState(0);
 
     // inline row editing state — rowKey is 'src' or the target's root_id string
     const [editingRow, setEditingRow] = useState<string | null>(null);
@@ -304,6 +305,7 @@ const ExplorerPage: React.FC = () => {
                 setRenderedNeurons(newNeurons);
                 setRenderedSynapses(synPoints);
                 setHiddenIds(new Set());
+                setCameraKey((k) => k + 1);
 
                 const srcNeuron = neuronMapRef.current.get(srcId);
                 const dstInfo = dstIds.map((id) => {
@@ -456,7 +458,25 @@ const ExplorerPage: React.FC = () => {
         <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f6f8fa' }}>
             {/* 3D canvas */}
             <Box sx={{ flex: 1, position: 'relative' }}>
-                <ExplorerCanvas3D neurons={visibleNeurons} synapses={visibleSynapses} />
+                <ExplorerCanvas3D neurons={visibleNeurons} synapses={visibleSynapses} cameraKey={cameraKey} />
+
+                {/* Reset view button */}
+                <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
+                    <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => setCameraKey((k) => k + 1)}
+                        sx={{
+                            bgcolor: 'rgba(255,255,255,0.9)',
+                            borderColor: '#d0d7de',
+                            color: '#57606a',
+                            fontSize: 13,
+                            '&:hover': { bgcolor: '#fff', borderColor: '#0969da', color: '#0969da' },
+                        }}
+                    >
+                        Reset view
+                    </Button>
+                </Box>
 
                 {/* Loading overlay */}
                 {isLoading && (
@@ -670,7 +690,7 @@ const ExplorerPage: React.FC = () => {
                     <Button
                         size="small"
                         variant="outlined"
-                        onClick={() => setDstCount((c) => c + 1)}
+                        onClick={() => setDstCount((c) => Math.min(10, c + 1))}
                         sx={{ minWidth: 32, px: 0, borderColor: '#d0d7de', color: '#57606a' }}
                     >
                         +

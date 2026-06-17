@@ -6,9 +6,15 @@ import { RenderedNeuron, SynapsePoint } from './types';
 interface Props {
     neurons: RenderedNeuron[];
     synapses: SynapsePoint[];
+    cameraKey: number;
 }
 
-// Cortical layer boundaries (µm depth from pia, SWC y-space)
+// Fixed MICrONS column bounds (µm, aligned space)
+const COL_X_MIN = 250;
+const COL_X_MAX = 1500;
+const COL_Y_DEPTH = 750; // pia=0, bottom=750; Three.js Y is negated
+
+// Cortical layer boundaries (µm depth from pia)
 const LAYER_DEPTHS: Record<string, number> = {
     'L2/3': 250,
     L4: 350,
@@ -89,13 +95,14 @@ function tag<T extends THREE.Object3D>(obj: T): T {
     return obj;
 }
 
-const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses }) => {
+const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
     const controlsRef = useRef<OrbitControls | null>(null);
     const frameRef = useRef<number>(0);
+    const fitRef = useRef<{ center: THREE.Vector3; zBoxMin: number; zBoxMax: number } | null>(null);
 
     // Initialise Three.js once
     useEffect(() => {
@@ -154,8 +161,6 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses }) => {
     // Rebuild scene whenever neurons / synapses change
     useEffect(() => {
         const scene = sceneRef.current;
-        const camera = cameraRef.current;
-        const controls = controlsRef.current;
         if (!scene) return;
 
         clearDynamic(scene);
@@ -211,45 +216,56 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses }) => {
             scene.add(tag(new THREE.Points(geo, mat)));
         }
 
-        // ── Bounding box ──────────────────────────────────────────────────────
-        const box = new THREE.Box3().setFromPoints(allPositions);
-        const center = box.getCenter(new THREE.Vector3());
-        const bSize = box.getSize(new THREE.Vector3());
+        if (allPositions.length === 0) return;
 
-        const xMin = box.min.x - 40;
-        const xMax = box.max.x + 40;
-        const zMid = center.z;
-        // Sprite scale proportional to scene width
-        const spriteW = bSize.x * 0.14;
-        const spriteH = spriteW * 0.28;
+        // ── Scene bounds (Z from neuron data; X/Y fixed to column bounds) ────
+        const box = new THREE.Box3().setFromPoints(allPositions);
+        const zMid = box.getCenter(new THREE.Vector3()).z;
+        const zBoxMin = box.min.z;
+        const zBoxMax = box.max.z;
+
+        // Store fit params for the camera-reset effect
+        fitRef.current = {
+            center: new THREE.Vector3((COL_X_MAX + COL_X_MIN) / 2, -COL_Y_DEPTH / 2, zMid),
+            zBoxMin,
+            zBoxMax,
+        };
+
+        // ── EM column wireframe box ───────────────────────────────────────────
+        const srcGeo = new THREE.BoxGeometry(COL_X_MAX - COL_X_MIN, COL_Y_DEPTH, zBoxMax - zBoxMin);
+        const edgesGeo = new THREE.EdgesGeometry(srcGeo);
+        srcGeo.dispose(); // only needed to create edges
+        const emBox = new THREE.LineSegments(
+            edgesGeo,
+            new THREE.LineBasicMaterial({ color: 0xbbbbbb, opacity: 0.3, transparent: true }),
+        );
+        emBox.position.set((COL_X_MAX + COL_X_MIN) / 2, -COL_Y_DEPTH / 2, zMid);
+        scene.add(tag(emBox));
 
         // ── Cortical layer lines ──────────────────────────────────────────────
-        // LAYER_DEPTHS are in SWC y-space (depth from pia, positive downward).
-        // After Y-inversion in Three.js: yThree = -ySWC, so depth=250 → y=-250.
-        // Labels are centred vertically between consecutive boundaries.
+        // Spans full column X extent; labels sit at vertical midpoint of each layer.
+        const colWidth = COL_X_MAX - COL_X_MIN;
+        const spriteW = colWidth * 0.14;
+        const spriteH = spriteW * 0.28;
+
         let prevDepth = 0;
         for (const [name, depthMicrons] of Object.entries(LAYER_DEPTHS)) {
             const yThree = -depthMicrons;
             const yMid = -((depthMicrons + prevDepth) / 2);
-            // Horizontal dashed line across X extent
-            const line = makeLine(xMin, yThree, zMid, xMax, yThree, zMid, LAYER_COLOR, 0.4);
-            scene.add(tag(line));
+            scene.add(tag(makeLine(COL_X_MIN, yThree, zMid, COL_X_MAX, yThree, zMid, LAYER_COLOR, 0.4)));
 
-            // Label centred between this boundary and the previous one
             const label = makeLabel(name, 40, '#666666');
             label.scale.set(spriteW, spriteH, 1);
-            label.position.set(xMin - spriteW * 0.6, yMid, zMid);
+            label.position.set(COL_X_MIN - spriteW * 0.6, yMid, zMid);
             scene.add(tag(label));
 
             prevDepth = depthMicrons;
         }
 
         // ── Floating X / Y axis indicator ────────────────────────────────────
-        // Placed at the bottom-left corner of the bounding box
-        const axLen = Math.min(bSize.x, bSize.y) * 0.15;
-        const axOrigin = new THREE.Vector3(xMin, box.min.y - axLen * 0.4, zMid);
+        const axLen = Math.min(colWidth, COL_Y_DEPTH) * 0.15;
+        const axOrigin = new THREE.Vector3(COL_X_MIN, box.min.y - axLen * 0.4, zMid);
 
-        // X axis (red, pointing right)
         const xArrow = new THREE.ArrowHelper(
             new THREE.Vector3(1, 0, 0),
             axOrigin,
@@ -264,7 +280,6 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses }) => {
         xLabel.position.set(axOrigin.x + axLen * 1.2, axOrigin.y, zMid);
         scene.add(tag(xLabel));
 
-        // Y axis (green, pointing up in Three.js = toward pia = decreasing depth)
         const yArrow = new THREE.ArrowHelper(
             new THREE.Vector3(0, 1, 0),
             axOrigin,
@@ -278,17 +293,25 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses }) => {
         yLabel.scale.set(spriteW * 0.9, spriteH * 0.9, 1);
         yLabel.position.set(axOrigin.x, axOrigin.y + axLen * 1.3, zMid);
         scene.add(tag(yLabel));
-
-        // ── Fit camera ───────────────────────────────────────────────────────
-        if (camera && controls) {
-            const maxDim = Math.max(bSize.x, bSize.y, bSize.z);
-            const fov = camera.fov * (Math.PI / 180);
-            const dist = Math.abs(maxDim / Math.sin(fov / 2));
-            camera.position.set(center.x + dist * 0.3, center.y + dist * 0.3, center.z + dist * 0.8);
-            controls.target.copy(center);
-            controls.update();
-        }
     }, [neurons, synapses]);
+
+    // Reset camera only when cameraKey changes — not on every scene rebuild
+    useEffect(() => {
+        const camera = cameraRef.current;
+        const controls = controlsRef.current;
+        if (!camera || !controls || !fitRef.current) return;
+        const { center, zBoxMin, zBoxMax } = fitRef.current;
+        const w = COL_X_MAX - COL_X_MIN;
+        const h = COL_Y_DEPTH;
+        const d = Math.max(zBoxMax - zBoxMin, 100);
+        const maxDim = Math.max(w, h, d);
+        // tan formula: dist that fits maxDim within the FOV, scaled to 55% for a tighter default view
+        const dist = (maxDim * 0.55) / Math.tan((camera.fov * Math.PI) / 360);
+        // No x-offset so the box is horizontally centred; slight y-offset for a top-down angle
+        camera.position.set(center.x, center.y + dist * 0.2, center.z + dist);
+        controls.target.copy(center);
+        controls.update();
+    }, [cameraKey]);
 
     return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
 };

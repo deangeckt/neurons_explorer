@@ -62,6 +62,10 @@ const IntroDialog: React.FC<Props> = ({ open, onClose }) => (
                     desc="Click any neuron ID in the Selected neurons panel to edit it inline. Press Enter to load the new ID, Escape to cancel."
                 />
                 <Row
+                    label="Randomize"
+                    desc="Pick a new random source and targets within the selected types. Lock individual neurons (🔒) to keep them across randomisations."
+                />
+                <Row
                     label="Source type"
                     desc="Filter which cell type the source neuron is picked from. Leave empty to allow all types. Hidden when the source is pinned."
                 />
@@ -72,10 +76,6 @@ const IntroDialog: React.FC<Props> = ({ open, onClose }) => (
                 <Row
                     label="Target count"
                     desc="How many target neurons to sample (1–10). Locked targets always count toward this total."
-                />
-                <Row
-                    label="Randomize"
-                    desc="Pick a new random source and targets within the selected types. Lock individual neurons (🔒) to keep them across randomisations."
                 />
             </Section>
 

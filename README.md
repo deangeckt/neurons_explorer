@@ -1,20 +1,14 @@
 # Neurons Explorer
 
+**Live demo:** https://deangeckt.github.io/neurons_explorer
+
 An interactive, browser-based 3D viewer for cortical neuron connectivity.
 Pick a source neuron, sample its synaptic targets, and explore their skeletons and synapse locations in real time.
 
-Data is from the [MICrONS](https://www.microns-explorer.org/) cortical column dataset (v1718) — ~1,300 neurons and ~500,000 intrinsic synapses.
+Data is from the [MICrONS](https://www.microns-explorer.org/) cortical column dataset (v1718) — ~1,300 neurons and ~146K intrinsic synapses.
 
-## Features
+## TODO add image here
 
-- **3D skeleton rendering** — source dendrite, source axon, and target dendrites colour-coded by role
-- **Synapse dots** — red dots at the precise synapse locations between the selected neurons
-- **Cell-type filters** — filter source and target pools by cell type (e.g. 23P, BC, MC)
-- **Lock / randomize** — lock individual neurons across randomizations; unlock to resample
-- **Inline ID editing** — click any neuron ID in the panel to type a specific root ID
-- **Display settings** — per-role colour pickers and opacity sliders
-- **Cortical layer lines** — L2/3, L4, L5, L6 depth guides overlaid on the 3D scene
-- **EM volume box** — wireframe bounding box showing the full column extent for spatial context
 
 ## Getting Started
 
@@ -44,7 +38,19 @@ npm start      # development server with hot reload
 npm run build  # production bundle
 ```
 
+## Citation
+
+If you use Neurons Explorer in your work, please cite:
+
+```bibtex
+@software{geckt2026neurons,
+  author  = {Geckt, Dean},
+  title   = {Neurons Explorer: Interactive 3D Browser for Cortical Neuron Connectivity},
+  year    = {2026},
+  url     = {https://github.com/deangeckt/neurons_explorer}
+}
+```
+
 ## Acknowledgments
 
-- [MICrONS Project](https://www.microns-explorer.org/) for the cortical column connectomics dataset
-- [NeuroMorpho.Org](https://neuromorpho.org/) for public neuron reconstructions
+Data provided by the [MICrONS Project](https://www.microns-explorer.org/) — a large-scale electron-microscopy reconstruction of a cortical column from mouse visual cortex.

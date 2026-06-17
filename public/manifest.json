@@ -1,6 +1,6 @@
 {
-  "short_name": "SWC editor",
-  "name": "Neuron SWC editor",
+  "short_name": "Neurons Explorer",
+  "name": "Neurons Explorer",
   "icons": [
     {
       "src": "favicon.ico",

@@ -1,9 +1,7 @@
-# Planned
-
+# TODO
 ## Future
 
-- now, add the "3d box" as in the viz.py with some 20 hardoded neurons in the background - gives the feeling of the whole Em
- -- after that try to fix the rendering jumpy behav on every button
+- add some 20 hardoded neurons in the background - gives the feeling of the whole Em
 
 - Work on mobile just like the original github did SWC_ editor did (even in vertical layout, the main panel with neurons was on top
 and the right "editing" panel was below it)
@@ -15,13 +13,6 @@ and the right "editing" panel was below it)
 - dark vs. light mode switch
 
 ## Assets
-- Change app name (whereever there is SWC neuron editor)
-- change readme completly. thank microns at the end, and create a similar ciation box but with new name
-- change manifest.json names; the name of the app is "Neurons Explorer" not "MICrONS Column Explorer"
-it happend to use MICrONS a lot indeed, but the it should be more clear that the data im using is from MICrONS, but the app is a bit more general than that... use this https://www.microns-explorer.org/ as a link to MICrONS.
-
-
-
 
 - change logo / favicon 
 

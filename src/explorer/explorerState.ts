@@ -40,37 +40,52 @@ export function sample(
     dstTypes: Set<string>,
     dstCount: number,
     forceSrcId?: bigint,
-    // Pinned dsts are always kept; remaining slots up to dstCount are filled randomly.
-    // If pinnedDstIds.length >= dstCount, no random sampling happens.
     pinnedDstIds?: bigint[],
 ): SampleResult | { error: string } {
     const srcPool = [...filterByTypes(allNeurons, srcTypes)].filter((id) => validSrcIds.has(id));
     const dstPool = filterByTypes(allNeurons, dstTypes);
 
-    if (srcPool.length === 0) return { error: 'No src neurons match the selected cell types.' };
-
-    const srcId =
-        forceSrcId && srcPool.includes(forceSrcId) ? forceSrcId : srcPool[Math.floor(Math.random() * srcPool.length)];
+    if (srcPool.length === 0) return { error: 'No source neurons match the selected cell types.' };
 
     const pinned = pinnedDstIds ?? [];
     const slotsLeft = Math.max(0, dstCount - pinned.length);
 
-    let dstIds: bigint[];
+    // If all slots are filled by pinned neurons, just compute their synapses with any valid src
     if (slotsLeft === 0) {
-        dstIds = pinned.slice(0, dstCount);
-    } else {
-        const outSynapses = synapses.filter((s) => s.pre_id === srcId && dstPool.has(s.post_id));
-        const pinnedSet = new Set(pinned.map(String));
-        const available = [...new Set(outSynapses.map((s) => s.post_id))].filter((id) => !pinnedSet.has(String(id)));
-        if (available.length === 0 && pinned.length === 0) {
-            return { error: `src ${srcId} has no targets in the selected dst types — try again.` };
-        }
-        const shuffled = available.sort(() => Math.random() - 0.5);
-        dstIds = [...pinned, ...shuffled.slice(0, slotsLeft)];
+        const srcId =
+            forceSrcId && srcPool.includes(forceSrcId)
+                ? forceSrcId
+                : srcPool[Math.floor(Math.random() * srcPool.length)];
+        const dstIds = pinned.slice(0, dstCount);
+        const dstSet = new Set(dstIds);
+        const connectedSynapses = synapses.filter((s) => s.pre_id === srcId && dstSet.has(s.post_id));
+        return { srcId, dstIds, connectedSynapses };
     }
 
-    const dstSet = new Set(dstIds);
-    const connectedSynapses = synapses.filter((s) => s.pre_id === srcId && dstSet.has(s.post_id));
+    const pinnedSet = new Set(pinned.map(String));
 
-    return { srcId, dstIds, connectedSynapses };
+    // If the source is forced, attempt once with that source.
+    // Otherwise retry up to min(srcPool.length, 20) times to find a source
+    // that has at least one available target in the dst pool.
+    const maxTries = forceSrcId ? 1 : Math.min(srcPool.length, 20);
+
+    for (let attempt = 0; attempt < maxTries; attempt++) {
+        const srcId =
+            forceSrcId && srcPool.includes(forceSrcId)
+                ? forceSrcId
+                : srcPool[Math.floor(Math.random() * srcPool.length)];
+
+        const outSynapses = synapses.filter((s) => s.pre_id === srcId && dstPool.has(s.post_id));
+        const available = [...new Set(outSynapses.map((s) => s.post_id))].filter((id) => !pinnedSet.has(String(id)));
+
+        if (available.length === 0 && pinned.length === 0) continue; // try another source
+
+        const shuffled = available.sort(() => Math.random() - 0.5);
+        const dstIds = [...pinned, ...shuffled.slice(0, slotsLeft)];
+        const dstSet = new Set(dstIds);
+        const connectedSynapses = synapses.filter((s) => s.pre_id === srcId && dstSet.has(s.post_id));
+        return { srcId, dstIds, connectedSynapses };
+    }
+
+    return { error: 'No source with targets matching the selected types. Try clearing the target type filter.' };
 }
