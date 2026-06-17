@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -8,9 +8,12 @@ import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import { alpha, useTheme } from '@mui/material/styles';
 
 import {
     NeuronRecord,
@@ -34,6 +37,7 @@ import { getUniqueCellTypes, computeValidSrcIds, sample } from './explorerState'
 import ExplorerCanvas3D from './ExplorerCanvas3D';
 import CellTypeToggles from './CellTypeToggles';
 import IntroDialog from './IntroDialog';
+import { ColorModeContext } from '../ColorModeContext';
 
 const EXCLUDED_CELL_TYPES = new Set(['Unsure E', 'Unsure I']);
 
@@ -125,19 +129,21 @@ const NeuronRow: React.FC<NeuronRowProps> = ({
                         sx={{
                             fontFamily: 'monospace',
                             fontSize: 14,
-                            color: '#1f2328',
+                            color: 'text.primary',
                             cursor: 'text',
-                            '&:hover': { color: '#0969da' },
+                            '&:hover': { color: 'primary.main' },
                         }}
                     >
                         {id}
                     </Typography>
-                    <Typography sx={{ color: '#57606a', fontSize: 13 }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
                         {subtitle}
                         {synCount !== undefined && (
                             <>
                                 {' · '}
-                                <span style={{ color: '#cf222e' }}>{synCount} syn</span>
+                                <Box component="span" sx={{ color: 'error.main' }}>
+                                    {synCount} syn
+                                </Box>
                             </>
                         )}
                     </Typography>
@@ -148,7 +154,7 @@ const NeuronRow: React.FC<NeuronRowProps> = ({
             size="small"
             onClick={onToggleLock}
             title={locked ? 'Locked — stays on Randomize' : 'Unlocked — will be randomized'}
-            sx={{ color: locked ? '#0969da' : '#d0d7de' }}
+            sx={{ color: locked ? 'primary.main' : 'divider' }}
         >
             {locked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
         </IconButton>
@@ -184,6 +190,10 @@ const ExplorerPage: React.FC = () => {
     const validSrcRef = useRef<Set<bigint> | null>(null);
     const neuronMapRef = useRef<Map<bigint, NeuronRecord>>(new Map());
     const alignTransformRef = useRef<AffineXY | null>(null);
+
+    const theme = useTheme();
+    const colorMode = useContext(ColorModeContext);
+    const isDark = theme.palette.mode === 'dark';
 
     const toggleHidden = useCallback((id: string) => {
         setHiddenIds((prev) => {
@@ -455,10 +465,22 @@ const ExplorerPage: React.FC = () => {
     const srcIsFixed = !!(info && lockedIds.has(String(info.srcId)));
 
     return (
-        <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f6f8fa' }}>
+        <Box
+            sx={{
+                display: 'flex',
+                height: '100vh',
+                flexDirection: { xs: 'column', md: 'row' },
+                bgcolor: 'background.default',
+            }}
+        >
             {/* 3D canvas */}
-            <Box sx={{ flex: 1, position: 'relative' }}>
-                <ExplorerCanvas3D neurons={visibleNeurons} synapses={visibleSynapses} cameraKey={cameraKey} />
+            <Box sx={{ flex: { xs: '0 0 45vh', md: 1 }, position: 'relative', minHeight: 0, minWidth: 0 }}>
+                <ExplorerCanvas3D
+                    neurons={visibleNeurons}
+                    synapses={visibleSynapses}
+                    cameraKey={cameraKey}
+                    isDark={isDark}
+                />
 
                 {/* Reset view button */}
                 <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
@@ -467,11 +489,15 @@ const ExplorerPage: React.FC = () => {
                         variant="outlined"
                         onClick={() => setCameraKey((k) => k + 1)}
                         sx={{
-                            bgcolor: 'rgba(255,255,255,0.9)',
-                            borderColor: '#d0d7de',
-                            color: '#57606a',
+                            bgcolor: (t) => alpha(t.palette.background.paper, 0.9),
+                            borderColor: 'divider',
+                            color: 'text.secondary',
                             fontSize: 13,
-                            '&:hover': { bgcolor: '#fff', borderColor: '#0969da', color: '#0969da' },
+                            '&:hover': {
+                                bgcolor: 'background.paper',
+                                borderColor: 'primary.main',
+                                color: 'primary.main',
+                            },
                         }}
                     >
                         Reset view
@@ -488,12 +514,12 @@ const ExplorerPage: React.FC = () => {
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            bgcolor: 'rgba(246,248,250,0.92)',
+                            bgcolor: (t) => alpha(t.palette.background.default, 0.92),
                             gap: 2,
                         }}
                     >
-                        <CircularProgress size={52} sx={{ color: '#0969da' }} />
-                        <Typography sx={{ color: '#57606a', fontSize: 16 }}>
+                        <CircularProgress size={52} sx={{ color: 'primary.main' }} />
+                        <Typography sx={{ color: 'text.secondary', fontSize: 16 }}>
                             {initialLoading ? 'Loading data…' : 'Loading skeletons…'}
                         </Typography>
                     </Box>
@@ -506,8 +532,9 @@ const ExplorerPage: React.FC = () => {
                             position: 'absolute',
                             bottom: 16,
                             left: 16,
-                            bgcolor: 'rgba(255,255,255,0.92)',
-                            border: '1px solid #d0d7de',
+                            bgcolor: (t) => alpha(t.palette.background.paper, 0.92),
+                            border: '1px solid',
+                            borderColor: 'divider',
                             borderRadius: 1,
                             p: 1.25,
                         }}
@@ -517,12 +544,12 @@ const ExplorerPage: React.FC = () => {
                                 <Box
                                     sx={{ width: 18, height: 4, bgcolor: renderStyles[role].color, borderRadius: 1 }}
                                 />
-                                <Typography sx={{ color: '#57606a', fontSize: 13 }}>{label}</Typography>
+                                <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>{label}</Typography>
                             </Box>
                         ))}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Box sx={{ width: 18, height: 4, bgcolor: 'red', borderRadius: 1 }} />
-                            <Typography sx={{ color: '#57606a', fontSize: 13 }}>synapses</Typography>
+                            <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>synapses</Typography>
                         </Box>
                     </Box>
                 )}
@@ -530,33 +557,47 @@ const ExplorerPage: React.FC = () => {
 
             {/* Control panel */}
             <Box
-                sx={{
-                    width: 460,
-                    borderLeft: '1px solid #d0d7de',
-                    bgcolor: '#ffffff',
+                sx={(t) => ({
+                    width: { xs: '100%', md: 460 },
+                    flex: { xs: 1, md: 'none' },
+                    borderLeft: { xs: 'none', md: `1px solid ${t.palette.divider}` },
+                    borderTop: { xs: `1px solid ${t.palette.divider}`, md: 'none' },
+                    bgcolor: 'background.paper',
                     p: 2.5,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 2,
                     overflowY: 'auto',
-                }}
+                    minHeight: 0,
+                })}
             >
                 {/* Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography sx={{ color: '#0969da', fontWeight: 700, fontSize: 22 }}>Neurons Explorer</Typography>
-                    <IconButton size="small" onClick={() => setIntroOpen(true)} sx={{ color: '#57606a' }}>
-                        <HelpOutlineIcon fontSize="small" />
-                    </IconButton>
+                    <Typography sx={{ color: 'primary.main', fontWeight: 700, fontSize: 22 }}>
+                        Neurons Explorer
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <IconButton size="small" onClick={colorMode.toggle} sx={{ color: 'text.secondary' }}>
+                            {isDark ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+                        </IconButton>
+                        <IconButton size="small" onClick={() => setIntroOpen(true)} sx={{ color: 'text.secondary' }}>
+                            <HelpOutlineIcon fontSize="small" />
+                        </IconButton>
+                    </Box>
                 </Box>
 
                 {/* Stats */}
                 {!initialLoading && (
-                    <Typography sx={{ color: '#6e7781', fontSize: 16 }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: 16 }}>
                         <a
                             href="https://www.microns-explorer.org/"
                             target="_blank"
                             rel="noreferrer"
-                            style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dotted #6e7781' }}
+                            style={{
+                                color: 'inherit',
+                                textDecoration: 'none',
+                                borderBottom: `1px dotted ${theme.palette.text.secondary}`,
+                            }}
                         >
                             MICrONS v1718
                         </a>{' '}
@@ -569,9 +610,9 @@ const ExplorerPage: React.FC = () => {
                 {/* ── Selected neurons ── */}
                 {info && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#57606a' }}>
+                        <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.secondary' }}>
                             Selected neurons
-                            <Typography component="span" sx={{ fontSize: 12, color: '#8c959f', ml: 1 }}>
+                            <Typography component="span" sx={{ fontSize: 12, color: 'text.disabled', ml: 1 }}>
                                 click ID to edit
                             </Typography>
                         </Typography>
@@ -620,7 +661,9 @@ const ExplorerPage: React.FC = () => {
 
                 {/* ── Display settings ── */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#57606a' }}>Display settings</Typography>
+                    <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.secondary' }}>
+                        Display settings
+                    </Typography>
                     {(Object.entries(ROLE_LABELS) as [NeuronRole, string][]).map(([role, label]) => {
                         const style = renderStyles[role];
                         return (
@@ -661,7 +704,9 @@ const ExplorerPage: React.FC = () => {
                                     }
                                     sx={{ flex: 1, color: style.color }}
                                 />
-                                <Typography sx={{ fontSize: 13, minWidth: 34, color: '#57606a', textAlign: 'right' }}>
+                                <Typography
+                                    sx={{ fontSize: 13, minWidth: 34, color: 'text.secondary', textAlign: 'right' }}
+                                >
                                     {Math.round(style.opacity * 100)}%
                                 </Typography>
                             </Box>
@@ -672,15 +717,15 @@ const ExplorerPage: React.FC = () => {
                 <Divider />
 
                 {/* ── Add neurons ── */}
-                <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#57606a' }}>Add neurons</Typography>
+                <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.secondary' }}>Add neurons</Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Typography sx={{ fontSize: 15, color: '#57606a', minWidth: 100 }}>Target count</Typography>
+                    <Typography sx={{ fontSize: 15, color: 'text.secondary', minWidth: 100 }}>Target count</Typography>
                     <Button
                         size="small"
                         variant="outlined"
                         onClick={() => setDstCount((c) => Math.max(1, c - 1))}
-                        sx={{ minWidth: 32, px: 0, borderColor: '#d0d7de', color: '#57606a' }}
+                        sx={{ minWidth: 32, px: 0, borderColor: 'divider', color: 'text.secondary' }}
                     >
                         −
                     </Button>
@@ -691,7 +736,7 @@ const ExplorerPage: React.FC = () => {
                         size="small"
                         variant="outlined"
                         onClick={() => setDstCount((c) => Math.min(10, c + 1))}
-                        sx={{ minWidth: 32, px: 0, borderColor: '#d0d7de', color: '#57606a' }}
+                        sx={{ minWidth: 32, px: 0, borderColor: 'divider', color: 'text.secondary' }}
                     >
                         +
                     </Button>
@@ -717,7 +762,7 @@ const ExplorerPage: React.FC = () => {
                     onClick={handleRandomize}
                     disabled={isLoading}
                     startIcon={renderLoading ? <CircularProgress size={16} color="inherit" /> : undefined}
-                    sx={{ bgcolor: '#0969da', '&:hover': { bgcolor: '#0550ae' }, fontSize: 17, py: 1.2 }}
+                    sx={{ fontSize: 17, py: 1.2 }}
                 >
                     {renderLoading ? 'Loading…' : 'Randomize'}
                 </Button>

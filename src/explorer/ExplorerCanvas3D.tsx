@@ -7,6 +7,7 @@ interface Props {
     neurons: RenderedNeuron[];
     synapses: SynapsePoint[];
     cameraKey: number;
+    isDark: boolean;
 }
 
 // Fixed MICrONS column bounds (µm, aligned space)
@@ -54,7 +55,7 @@ function makeLabel(text: string, fontSize = 36, color = '#555555'): THREE.Sprite
     ctx.fillText(text, 8, H / DPR / 2);
     const tex = new THREE.CanvasTexture(canvas);
     tex.anisotropy = 4;
-    return new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+    return new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
 }
 
 // Build a thin line from (x1,y1,z1) to (x2,y2,z2)
@@ -95,7 +96,7 @@ function tag<T extends THREE.Object3D>(obj: T): T {
     return obj;
 }
 
-const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey }) => {
+const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey, isDark }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -109,7 +110,7 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey }) => 
         if (!containerRef.current) return;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xffffff);
+        scene.background = new THREE.Color(isDark ? 0x0d1117 : 0xffffff);
         sceneRef.current = scene;
 
         const camera = new THREE.PerspectiveCamera(
@@ -157,6 +158,13 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey }) => 
             }
         };
     }, []);
+
+    // Update background colour when dark mode toggles
+    useEffect(() => {
+        if (sceneRef.current) {
+            sceneRef.current.background = new THREE.Color(isDark ? 0x0d1117 : 0xffffff);
+        }
+    }, [isDark]);
 
     // Rebuild scene whenever neurons / synapses change
     useEffect(() => {
@@ -248,13 +256,19 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey }) => 
         const spriteW = colWidth * 0.14;
         const spriteH = spriteW * 0.28;
 
+        const layerLabelColor = isDark ? '#aaaaaa' : '#666666';
+        const axisXColor = isDark ? '#ff6666' : '#cc3333';
+        const axisXHex = isDark ? 0xff6666 : 0xcc3333;
+        const axisYColor = isDark ? '#4caf50' : '#2e7d32';
+        const axisYHex = isDark ? 0x4caf50 : 0x2e7d32;
+
         let prevDepth = 0;
         for (const [name, depthMicrons] of Object.entries(LAYER_DEPTHS)) {
             const yThree = -depthMicrons;
             const yMid = -((depthMicrons + prevDepth) / 2);
             scene.add(tag(makeLine(COL_X_MIN, yThree, zMid, COL_X_MAX, yThree, zMid, LAYER_COLOR, 0.4)));
 
-            const label = makeLabel(name, 40, '#666666');
+            const label = makeLabel(name, 40, layerLabelColor);
             label.scale.set(spriteW, spriteH, 1);
             label.position.set(COL_X_MIN - spriteW * 0.6, yMid, zMid);
             scene.add(tag(label));
@@ -270,13 +284,13 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey }) => 
             new THREE.Vector3(1, 0, 0),
             axOrigin,
             axLen,
-            0xcc3333,
+            axisXHex,
             axLen * 0.2,
             axLen * 0.12,
         );
         scene.add(tag(xArrow));
-        const xLabel = makeLabel('X', 32, '#cc3333');
-        xLabel.scale.set(spriteW * 0.6, spriteH * 0.6, 1);
+        const xLabel = makeLabel('X', 48, axisXColor);
+        xLabel.scale.set(spriteW * 0.8, spriteH * 0.8, 1);
         xLabel.position.set(axOrigin.x + axLen * 1.2, axOrigin.y, zMid);
         scene.add(tag(xLabel));
 
@@ -284,16 +298,34 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey }) => 
             new THREE.Vector3(0, 1, 0),
             axOrigin,
             axLen,
-            0x2e7d32,
+            axisYHex,
             axLen * 0.2,
             axLen * 0.12,
         );
         scene.add(tag(yArrow));
-        const yLabel = makeLabel('Y (pia ↑)', 28, '#2e7d32');
-        yLabel.scale.set(spriteW * 0.9, spriteH * 0.9, 1);
+        const yLabel = makeLabel('Y (pia ↑)', 40, axisYColor);
+        yLabel.scale.set(spriteW * 1.1, spriteH * 1.1, 1);
         yLabel.position.set(axOrigin.x, axOrigin.y + axLen * 1.3, zMid);
         scene.add(tag(yLabel));
-    }, [neurons, synapses]);
+
+        // ── Scale bar (100 µm) at bottom-right of EM column ──────────────────
+        const scaleColor = isDark ? 0xcccccc : 0x444444;
+        const scaleColorStr = isDark ? '#cccccc' : '#444444';
+        const sbY = -COL_Y_DEPTH;
+        const sbXEnd = COL_X_MAX;
+        const sbXStart = sbXEnd - 100; // exactly 100 µm
+        const tickH = 15;
+
+        scene.add(tag(makeLine(sbXStart, sbY, zMid, sbXEnd, sbY, zMid, scaleColor, 0.9)));
+        scene.add(tag(makeLine(sbXStart, sbY - tickH, zMid, sbXStart, sbY + tickH, zMid, scaleColor, 0.9)));
+        scene.add(tag(makeLine(sbXEnd, sbY - tickH, zMid, sbXEnd, sbY + tickH, zMid, scaleColor, 0.9)));
+
+        const scaleLabel = makeLabel('100 µm', 34, scaleColorStr);
+        const scaleLabelW = colWidth * 0.1;
+        scaleLabel.scale.set(scaleLabelW, scaleLabelW * 0.28, 1);
+        scaleLabel.position.set((sbXStart + sbXEnd) / 2, sbY + tickH * 2.5, zMid);
+        scene.add(tag(scaleLabel));
+    }, [neurons, synapses, isDark]);
 
     // Reset camera only when cameraKey changes — not on every scene rebuild
     useEffect(() => {

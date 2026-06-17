@@ -18,7 +18,7 @@ const CellTypeToggles: React.FC<Props> = ({ label, cellTypes, selected, onChange
 
     return (
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, flexWrap: 'wrap', mb: 0.5 }}>
-            <Typography sx={{ color: '#57606a', minWidth: 80, pt: '6px', fontSize: 13, fontWeight: 600 }}>
+            <Typography sx={{ color: 'text.secondary', minWidth: 80, pt: '6px', fontSize: 13, fontWeight: 600 }}>
                 {label}
             </Typography>
             <ToggleButtonGroup
@@ -35,10 +35,10 @@ const CellTypeToggles: React.FC<Props> = ({ label, cellTypes, selected, onChange
                             fontSize: 15,
                             py: '4px',
                             px: '10px',
-                            color: '#57606a',
-                            borderColor: '#d0d7de',
-                            bgcolor: '#ffffff',
-                            '&:hover': { bgcolor: '#f3f4f6', color: '#1f2328' },
+                            color: 'text.secondary',
+                            borderColor: 'divider',
+                            bgcolor: 'background.paper',
+                            '&:hover': { bgcolor: 'action.hover', color: 'text.primary' },
                             '&.Mui-selected': {
                                 bgcolor: '#2e7d32',
                                 color: '#fff',

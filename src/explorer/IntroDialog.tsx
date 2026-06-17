@@ -15,7 +15,7 @@ interface Props {
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <Box sx={{ mb: 2 }}>
-        <Typography sx={{ fontWeight: 700, fontSize: 15, color: '#0969da', mb: 0.75 }}>{title}</Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: 15, color: 'primary.main', mb: 0.75 }}>{title}</Typography>
         {children}
     </Box>
 );
@@ -26,8 +26,8 @@ const Row: React.FC<{ label: string; desc: string }> = ({ label, desc }) => (
             sx={{
                 fontFamily: 'monospace',
                 fontSize: 13,
-                bgcolor: '#eaeef2',
-                color: '#1f2328',
+                bgcolor: 'action.hover',
+                color: 'text.primary',
                 px: 0.75,
                 py: 0.25,
                 borderRadius: 0.5,
@@ -38,16 +38,16 @@ const Row: React.FC<{ label: string; desc: string }> = ({ label, desc }) => (
         >
             {label}
         </Typography>
-        <Typography sx={{ fontSize: 14, color: '#57606a' }}>{desc}</Typography>
+        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{desc}</Typography>
     </Box>
 );
 
 const IntroDialog: React.FC<Props> = ({ open, onClose }) => (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontSize: 18, fontWeight: 700, color: '#1f2328' }}>Neurons Explorer</DialogTitle>
+        <DialogTitle sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary' }}>Neurons Explorer</DialogTitle>
 
         <DialogContent dividers>
-            <Typography sx={{ fontSize: 14, color: '#57606a', mb: 2 }}>
+            <Typography sx={{ fontSize: 14, color: 'text.secondary', mb: 2 }}>
                 Explore synaptic connectivity in the{' '}
                 <a href="https://www.microns-explorer.org/" target="_blank" rel="noreferrer">
                     MICrONS
@@ -81,22 +81,6 @@ const IntroDialog: React.FC<Props> = ({ open, onClose }) => (
 
             <Divider sx={{ my: 1.5 }} />
 
-            <Section title="Colour legend">
-                {[
-                    { color: 'darkorange', label: 'src dendrite' },
-                    { color: 'darkgreen', label: 'src axon' },
-                    { color: 'royalblue', label: 'dst dendrites' },
-                    { color: 'red', label: 'synapse locations' },
-                ].map(({ color, label }) => (
-                    <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                        <Box sx={{ width: 24, height: 4, bgcolor: color, borderRadius: 1, flexShrink: 0 }} />
-                        <Typography sx={{ fontSize: 14, color: '#57606a' }}>{label}</Typography>
-                    </Box>
-                ))}
-            </Section>
-
-            <Divider sx={{ my: 1.5 }} />
-
             <Section title="3D Navigation">
                 <Row label="Left drag" desc="Rotate / orbit around the neurons." />
                 <Row label="Right drag" desc="Pan (translate) the view." />
@@ -105,11 +89,7 @@ const IntroDialog: React.FC<Props> = ({ open, onClose }) => (
         </DialogContent>
 
         <DialogActions>
-            <Button
-                onClick={onClose}
-                variant="contained"
-                sx={{ bgcolor: '#0969da', '&:hover': { bgcolor: '#0550ae' } }}
-            >
+            <Button onClick={onClose} variant="contained">
                 Got it
             </Button>
         </DialogActions>

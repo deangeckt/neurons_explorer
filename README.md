@@ -1,14 +1,15 @@
 # Neurons Explorer
 
-**Live demo:** https://deangeckt.github.io/neurons_explorer
+[![Live Demo](https://github.com/deangeckt/neurons_explorer/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/deangeckt/neurons_explorer/actions)
+[![GitHub stars](https://img.shields.io/github/stars/deangeckt/neurons_explorer?style=social)](https://github.com/deangeckt/neurons_explorer/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/deangeckt/neurons_explorer)](https://github.com/deangeckt/neurons_explorer/issues)
 
-An interactive, browser-based 3D viewer for cortical neuron connectivity.
+A free, browser-based [**interactive 3D viewer**](https://deangeckt.github.io/neurons_explorer) for cortical neuron connectivity — no installation required.
 Pick a source neuron, sample its synaptic targets, and explore their skeletons and synapse locations in real time.
 
 Data is from the [MICrONS](https://www.microns-explorer.org/) cortical column dataset (v1718) — ~1,300 neurons and ~146K intrinsic synapses.
 
-## TODO add image here
-
+![alt text](image.png)
 
 ## Getting Started
 
@@ -21,7 +22,7 @@ npm start
 
 The app will open at `http://localhost:3000`.
 
-### Data setup
+### Data Setup
 
 Place the following files in `public/` before running:
 
