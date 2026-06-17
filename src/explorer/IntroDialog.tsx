@@ -44,12 +44,16 @@ const Row: React.FC<{ label: string; desc: string }> = ({ label, desc }) => (
 
 const IntroDialog: React.FC<Props> = ({ open, onClose }) => (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontSize: 18, fontWeight: 700, color: '#1f2328' }}>MICrONS Column Explorer</DialogTitle>
+        <DialogTitle sx={{ fontSize: 18, fontWeight: 700, color: '#1f2328' }}>Neurons Explorer</DialogTitle>
 
         <DialogContent dividers>
             <Typography sx={{ fontSize: 14, color: '#57606a', mb: 2 }}>
-                Explore synaptic connectivity in the MICrONS cortical column (v1718). Pick a source neuron and visualise
-                its outgoing connections to target neurons in 3D.
+                Explore synaptic connectivity in the{' '}
+                <a href="https://www.microns-explorer.org/" target="_blank" rel="noreferrer">
+                    MICrONS
+                </a>{' '}
+                cortical column (v1718). Pick a source neuron and visualise its outgoing connections to target neurons
+                in 3D.
             </Typography>
 
             <Section title="UI Controls">

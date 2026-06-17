@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -437,11 +437,18 @@ const ExplorerPage: React.FC = () => {
 
     const isLoading = initialLoading || renderLoading;
 
-    const visibleNeurons = renderedNeurons
-        .filter((n) => !hiddenIds.has(n.id))
-        .map((n) => ({ ...n, color: renderStyles[n.role].color, opacity: renderStyles[n.role].opacity }));
+    const visibleNeurons = useMemo(
+        () =>
+            renderedNeurons
+                .filter((n) => !hiddenIds.has(n.id))
+                .map((n) => ({ ...n, color: renderStyles[n.role].color, opacity: renderStyles[n.role].opacity })),
+        [renderedNeurons, hiddenIds, renderStyles],
+    );
 
-    const visibleSynapses = renderedSynapses.filter((s) => !hiddenIds.has(s.targetId));
+    const visibleSynapses = useMemo(
+        () => renderedSynapses.filter((s) => !hiddenIds.has(s.targetId)),
+        [renderedSynapses, hiddenIds],
+    );
 
     const srcIsFixed = !!(info && lockedIds.has(String(info.srcId)));
 
@@ -516,9 +523,7 @@ const ExplorerPage: React.FC = () => {
             >
                 {/* Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography sx={{ color: '#0969da', fontWeight: 700, fontSize: 22 }}>
-                        MICrONS Column Explorer
-                    </Typography>
+                    <Typography sx={{ color: '#0969da', fontWeight: 700, fontSize: 22 }}>Neurons Explorer</Typography>
                     <IconButton size="small" onClick={() => setIntroOpen(true)} sx={{ color: '#57606a' }}>
                         <HelpOutlineIcon fontSize="small" />
                     </IconButton>
@@ -527,7 +532,15 @@ const ExplorerPage: React.FC = () => {
                 {/* Stats */}
                 {!initialLoading && (
                     <Typography sx={{ color: '#6e7781', fontSize: 16 }}>
-                        v1718 · {neuronCount.toLocaleString()} neurons · {synapseCount.toLocaleString()} synapses
+                        <a
+                            href="https://www.microns-explorer.org/"
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dotted #6e7781' }}
+                        >
+                            MICrONS v1718
+                        </a>{' '}
+                        · {neuronCount.toLocaleString()} neurons · {synapseCount.toLocaleString()} synapses
                     </Typography>
                 )}
 
