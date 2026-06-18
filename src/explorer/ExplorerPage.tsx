@@ -19,6 +19,7 @@ import {
     NeuronRecord,
     NeuronRole,
     RenderStyle,
+    Segment3D,
     SynapseRecord,
     RenderedNeuron,
     SynapsePoint,
@@ -29,6 +30,7 @@ import {
     loadNeurons,
     loadSynapses,
     loadSkeleton,
+    loadBackgroundSkeletons,
     voxelToMicron,
     computeAlignTransform,
     applyAlignTransform,
@@ -167,6 +169,7 @@ const ExplorerPage: React.FC = () => {
     const [srcTypes, setSrcTypes] = useState<Set<string>>(new Set());
     const [dstTypes, setDstTypes] = useState<Set<string>>(new Set());
 
+    const [backgroundSegments, setBackgroundSegments] = useState<Segment3D[]>([]);
     const [renderedNeurons, setRenderedNeurons] = useState<RenderedNeuron[]>([]);
     const [renderedSynapses, setRenderedSynapses] = useState<SynapsePoint[]>([]);
     const [info, setInfo] = useState<InfoData | null>(null);
@@ -175,6 +178,7 @@ const ExplorerPage: React.FC = () => {
     const [neuronCount, setNeuronCount] = useState(0);
     const [synapseCount, setSynapseCount] = useState(0);
     const [introOpen, setIntroOpen] = useState(false);
+    const [showBackground, setShowBackground] = useState(true);
     const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
     const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
     const [dstCount, setDstCount] = useState(DEFAULT_DST_COUNT);
@@ -341,15 +345,24 @@ const ExplorerPage: React.FC = () => {
     );
 
     useEffect(() => {
-        Promise.all([loadNeurons(), loadSynapses()])
-            .then(([ns, syns]) => {
+        Promise.all([loadNeurons(), loadSynapses(), loadBackgroundSkeletons()])
+            .then(([ns, syns, bgSegs]) => {
                 const nm = new Map(ns.map((n) => [n.root_id, n]));
                 const validSrc = computeValidSrcIds(ns, syns);
+                const t = computeAlignTransform(ns);
 
                 neuronMapRef.current = nm;
                 synapsesRef.current = syns;
                 validSrcRef.current = validSrc;
-                alignTransformRef.current = computeAlignTransform(ns);
+                alignTransformRef.current = t;
+
+                setBackgroundSegments(
+                    bgSegs.map((s) => {
+                        const p1 = applyAlignTransform(s.x1, s.y1, s.z1, t);
+                        const p2 = applyAlignTransform(s.x2, s.y2, s.z2, t);
+                        return { ...s, x1: p1.x, y1: p1.y, z1: p1.z, x2: p2.x, y2: p2.y, z2: p2.z };
+                    }),
+                );
 
                 setNeurons(ns);
                 setCellTypes(getUniqueCellTypes(ns).filter((t) => !EXCLUDED_CELL_TYPES.has(t)));
@@ -478,9 +491,32 @@ const ExplorerPage: React.FC = () => {
                 <ExplorerCanvas3D
                     neurons={visibleNeurons}
                     synapses={visibleSynapses}
+                    backgroundSegments={showBackground ? backgroundSegments : []}
                     cameraKey={cameraKey}
                     isDark={isDark}
                 />
+
+                {/* App name overlay */}
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 12,
+                        left: 12,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                    }}
+                >
+                    <Box
+                        component="img"
+                        src={`${process.env.PUBLIC_URL}/logo192.png`}
+                        alt="logo"
+                        sx={{ width: 32, height: 32 }}
+                    />
+                    <Typography sx={{ fontWeight: 700, fontSize: 20, color: 'primary.main', lineHeight: 1 }}>
+                        Neurons Explorer
+                    </Typography>
+                </Box>
 
                 {/* Reset view button */}
                 <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
@@ -571,12 +607,17 @@ const ExplorerPage: React.FC = () => {
                     minHeight: 0,
                 })}
             >
-                {/* Header */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography sx={{ color: 'primary.main', fontWeight: 700, fontSize: 22 }}>
-                        Neurons Explorer
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                {/* Stats + icons */}
+                <Box sx={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                    {!initialLoading && (
+                        <Typography
+                            sx={{ color: 'text.secondary', fontSize: 16, flex: 1, textAlign: 'center', px: '72px' }}
+                        >
+                            MICrONS v1718 · {neuronCount.toLocaleString()} neurons · {synapseCount.toLocaleString()}{' '}
+                            synapses
+                        </Typography>
+                    )}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, position: 'absolute', right: 0 }}>
                         <IconButton size="small" onClick={colorMode.toggle} sx={{ color: 'text.secondary' }}>
                             {isDark ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
                         </IconButton>
@@ -585,25 +626,6 @@ const ExplorerPage: React.FC = () => {
                         </IconButton>
                     </Box>
                 </Box>
-
-                {/* Stats */}
-                {!initialLoading && (
-                    <Typography sx={{ color: 'text.secondary', fontSize: 16 }}>
-                        <a
-                            href="https://www.microns-explorer.org/"
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                                color: 'inherit',
-                                textDecoration: 'none',
-                                borderBottom: `1px dotted ${theme.palette.text.secondary}`,
-                            }}
-                        >
-                            MICrONS v1718
-                        </a>{' '}
-                        · {neuronCount.toLocaleString()} neurons · {synapseCount.toLocaleString()} synapses
-                    </Typography>
-                )}
 
                 <Divider />
 
@@ -768,7 +790,12 @@ const ExplorerPage: React.FC = () => {
                 </Button>
             </Box>
 
-            <IntroDialog open={introOpen} onClose={() => setIntroOpen(false)} />
+            <IntroDialog
+                open={introOpen}
+                onClose={() => setIntroOpen(false)}
+                showBackground={showBackground}
+                onToggleBackground={() => setShowBackground((v) => !v)}
+            />
         </Box>
     );
 };

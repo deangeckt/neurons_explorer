@@ -178,6 +178,39 @@ function splitCSVRow(line: string): string[] {
     return cols;
 }
 
+export async function loadBackgroundSkeletons(): Promise<Segment3D[]> {
+    const ids = [
+        66976, 79652, 106443, 114033, 123756, 155008, 169463, 169895, 190134, 228509, 237600, 263245, 270385, 301598,
+        305418, 308200, 329982, 357235, 361787, 376367, 403258, 404114, 419728, 421031, 427392, 427685, 438567, 455140,
+        488801, 516258, 536873, 553003, 559091, 561155, 564510, 608601, 614757, 619792, 622464, 769011,
+    ];
+    const results = await Promise.all(
+        ids.map(async (id) => {
+            try {
+                const resp = await fetch(`${process.env.PUBLIC_URL}/background_skeletons/${id}.json`);
+                if (!resp.ok) return [];
+                const { s } = (await resp.json()) as { s: number[] };
+                const segs: Segment3D[] = [];
+                for (let i = 0; i < s.length; i += 6) {
+                    segs.push({
+                        x1: s[i],
+                        y1: s[i + 1],
+                        z1: s[i + 2],
+                        x2: s[i + 3],
+                        y2: s[i + 4],
+                        z2: s[i + 5],
+                        tid: 3,
+                    });
+                }
+                return segs;
+            } catch {
+                return [];
+            }
+        }),
+    );
+    return results.flat();
+}
+
 export async function loadSkeleton(root_id: bigint): Promise<Segment3D[]> {
     const resp = await fetch(`${process.env.PUBLIC_URL}/skeletons/${root_id}.swc`);
     if (!resp.ok) throw new Error(`SWC not found for ${root_id}`);

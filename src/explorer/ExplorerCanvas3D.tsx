@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { RenderedNeuron, SynapsePoint } from './types';
+import { RenderedNeuron, Segment3D, SynapsePoint } from './types';
 
 interface Props {
     neurons: RenderedNeuron[];
     synapses: SynapsePoint[];
+    backgroundSegments: Segment3D[];
     cameraKey: number;
     isDark: boolean;
 }
@@ -96,7 +97,7 @@ function tag<T extends THREE.Object3D>(obj: T): T {
     return obj;
 }
 
-const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey, isDark }) => {
+const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, backgroundSegments, cameraKey, isDark }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -175,6 +176,24 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey, isDar
         if (neurons.length === 0 && synapses.length === 0) return;
 
         const allPositions: THREE.Vector3[] = [];
+
+        // ── Background skeletons (gray, non-interactive, alpha=0.2) ──────────
+        if (backgroundSegments.length > 0) {
+            const positions = new Float32Array(backgroundSegments.length * 6);
+            let i = 0;
+            for (const seg of backgroundSegments) {
+                positions[i++] = seg.x1;
+                positions[i++] = -seg.y1;
+                positions[i++] = seg.z1;
+                positions[i++] = seg.x2;
+                positions[i++] = -seg.y2;
+                positions[i++] = seg.z2;
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const mat = new THREE.LineBasicMaterial({ color: 0x888888, opacity: 0.2, transparent: true });
+            scene.add(tag(new THREE.LineSegments(geo, mat)));
+        }
 
         // ── Neurons ──────────────────────────────────────────────────────────
         for (const neuron of neurons) {
@@ -325,7 +344,7 @@ const ExplorerCanvas3D: React.FC<Props> = ({ neurons, synapses, cameraKey, isDar
         scaleLabel.scale.set(scaleLabelW, scaleLabelW * 0.28, 1);
         scaleLabel.position.set((sbXStart + sbXEnd) / 2, sbY + tickH * 2.5, zMid);
         scene.add(tag(scaleLabel));
-    }, [neurons, synapses, isDark]);
+    }, [neurons, synapses, backgroundSegments, isDark]);
 
     // Reset camera only when cameraKey changes — not on every scene rebuild
     useEffect(() => {

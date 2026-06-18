@@ -4,6 +4,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
+import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -11,6 +13,8 @@ import Divider from '@mui/material/Divider';
 interface Props {
     open: boolean;
     onClose: () => void;
+    showBackground: boolean;
+    onToggleBackground: () => void;
 }
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
@@ -42,16 +46,16 @@ const Row: React.FC<{ label: string; desc: string }> = ({ label, desc }) => (
     </Box>
 );
 
-const IntroDialog: React.FC<Props> = ({ open, onClose }) => (
+const IntroDialog: React.FC<Props> = ({ open, onClose, showBackground, onToggleBackground }) => (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary' }}>Neurons Explorer</DialogTitle>
 
         <DialogContent dividers>
             <Typography sx={{ fontSize: 14, color: 'text.secondary', mb: 2 }}>
                 Explore synaptic connectivity in the{' '}
-                <a href="https://www.microns-explorer.org/" target="_blank" rel="noreferrer">
+                <Link href="https://www.microns-explorer.org/" target="_blank" rel="noreferrer">
                     MICrONS
-                </a>{' '}
+                </Link>{' '}
                 cortical column (v1718). Pick a source neuron and visualise its outgoing connections to target neurons
                 in 3D.
             </Typography>
@@ -77,6 +81,20 @@ const IntroDialog: React.FC<Props> = ({ open, onClose }) => (
                     label="Target count"
                     desc="How many target neurons to sample (1–10). Locked targets always count toward this total."
                 />
+            </Section>
+
+            <Divider sx={{ my: 1.5 }} />
+
+            <Section title="Background Neurons">
+                <Typography sx={{ fontSize: 14, color: 'text.secondary', mb: 1 }}>
+                    The faint gray skeletons visible in the background are neurons from the 1 mm³ volume{' '}
+                    <em>outside</em> the column. They are shown for spatial context only and cannot be selected or
+                    edited.
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Switch size="small" checked={showBackground} onChange={onToggleBackground} />
+                    <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Show background skeletons</Typography>
+                </Box>
             </Section>
 
             <Divider sx={{ my: 1.5 }} />
