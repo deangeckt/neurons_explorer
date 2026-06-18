@@ -48,7 +48,17 @@ const Row: React.FC<{ label: string; desc: string }> = ({ label, desc }) => (
 
 const IntroDialog: React.FC<Props> = ({ open, onClose, showBackground, onToggleBackground }) => (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary' }}>Neurons Explorer</DialogTitle>
+        <DialogTitle
+            sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 2 }}
+        >
+            <Box
+                component="img"
+                src={`${process.env.PUBLIC_URL}/logo192.png`}
+                alt="logo"
+                sx={{ width: 64, height: 64 }}
+            />
+            Neurons Explorer
+        </DialogTitle>
 
         <DialogContent dividers>
             <Typography sx={{ fontSize: 14, color: 'text.secondary', mb: 2 }}>

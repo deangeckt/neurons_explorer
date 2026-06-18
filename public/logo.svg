@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="54 54 892 892">
+  <line x1="200" y1="300" x2="400" y2="900" stroke="rgb(0, 100, 0)" stroke-width="28" stroke-linecap="round"/>
+  <line x1="200" y1="300" x2="650" y2="650" stroke="rgb(0, 100, 0)" stroke-width="28" stroke-linecap="round"/>
+  <line x1="100" y1="650" x2="650" y2="650" stroke="rgb(0, 100, 0)" stroke-width="28" stroke-linecap="round"/>
+
+  <line x1="750" y1="100" x2="650" y2="650" stroke="rgb(225, 140, 0)" stroke-width="28" stroke-linecap="round"/>
+  <line x1="600" y1="200" x2="900" y2="700" stroke="rgb(225, 140, 0)" stroke-width="28" stroke-linecap="round"/>
+
+  <line x1="400" y1="900" x2="900" y2="700" stroke="rgb(65, 105, 225)" stroke-width="28" stroke-linecap="round"/>
+
+  <circle cx="200" cy="300" r="46" fill="rgb(0, 100, 0)"/>
+  <circle cx="100" cy="650" r="46" fill="rgb(0, 100, 0)"/>
+  <circle cx="650" cy="650" r="46" fill="rgb(0, 100, 0)"/>
+  <circle cx="850" cy="300" r="22" fill="rgb(0, 100, 0)"/> 
+
+  <circle cx="400" cy="900" r="46" fill="rgb(65, 105, 225)"/>
+  <circle cx="900" cy="700" r="46" fill="rgb(65, 105, 225)"/>
+  <circle cx="400" cy="250" r="22" fill="rgb(65, 105, 225)"/> 
+
+  <circle cx="750" cy="100" r="46" fill="rgb(225, 140, 0)"/>
+  <circle cx="600" cy="200" r="46" fill="rgb(225, 140, 0)"/>
+  <circle cx="700" cy="900" r="22" fill="rgb(225, 140, 0)"/> 
+</svg>

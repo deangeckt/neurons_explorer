@@ -566,7 +566,7 @@ const ExplorerPage: React.FC = () => {
                         component="img"
                         src={`${process.env.PUBLIC_URL}/logo192.png`}
                         alt="logo"
-                        sx={{ width: 32, height: 32 }}
+                        sx={{ width: 64, height: 64 }}
                     />
                     <Typography sx={{ fontWeight: 700, fontSize: 20, color: 'primary.main', lineHeight: 1 }}>
                         Neurons Explorer
