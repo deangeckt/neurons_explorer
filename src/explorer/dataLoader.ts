@@ -263,3 +263,119 @@ function parseSWC3D(text: string): Segment3D[] {
 
     return segments;
 }
+
+export interface SkeletonTree {
+    segments: Segment3D[];
+    aDistFromSoma: Float32Array; // length = segments.length * 2 (one per endpoint)
+    aBranchTag: Float32Array; // length = segments.length * 2
+    branchTags: number[]; // unique tags assigned to branches
+}
+
+export function parseSWCWithTree(text: string): SkeletonTree {
+    type Node = { x: number; y: number; z: number; tid: number; pid: number };
+    const nodeMap = new Map<number, Node>();
+    const childrenMap = new Map<number, number[]>();
+    let somaId: number | null = null;
+    let firstRootId: number | null = null;
+
+    for (const line of text.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const parts = trimmed.split(/\s+/);
+        if (parts.length < 7) continue;
+
+        const id = parseInt(parts[0]);
+        const tid = parseInt(parts[1]);
+        const x = parseFloat(parts[2]);
+        const y = parseFloat(parts[3]);
+        const z = parseFloat(parts[4]);
+        const pid = parseInt(parts[6]);
+        nodeMap.set(id, { x, y, z, tid, pid });
+        if (pid === -1 && firstRootId === null) firstRootId = id;
+        if (tid === 1 && somaId === null) somaId = id;
+        if (pid !== -1) {
+            const arr = childrenMap.get(pid);
+            if (arr) arr.push(id);
+            else childrenMap.set(pid, [id]);
+        }
+    }
+
+    const root = somaId ?? firstRootId;
+    if (root === null || !nodeMap.has(root)) {
+        return {
+            segments: [],
+            aDistFromSoma: new Float32Array(0),
+            aBranchTag: new Float32Array(0),
+            branchTags: [],
+        };
+    }
+
+    // BFS from soma: compute geodesic distance and branch tags.
+    // A new branch tag is assigned at each immediate child of the soma and at
+    // each child of a bifurcation (≥2 children). Within a non-branching run
+    // the tag propagates from parent to child.
+    const distMap = new Map<number, number>();
+    const tagMap = new Map<number, number>();
+    distMap.set(root, 0);
+    tagMap.set(root, -1); // soma itself has no branch tag
+    let nextTag = 0;
+    const queue: number[] = [root];
+    while (queue.length > 0) {
+        const id = queue.shift() as number;
+        const node = nodeMap.get(id);
+        if (!node) continue;
+        const children = childrenMap.get(id) ?? [];
+        const parentTag = tagMap.get(id) ?? -1;
+        const parentIsBifurcation = id === root || children.length >= 2;
+        for (const cid of children) {
+            const child = nodeMap.get(cid);
+            if (!child) continue;
+            const dx = child.x - node.x;
+            const dy = child.y - node.y;
+            const dz = child.z - node.z;
+            const segLen = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            distMap.set(cid, (distMap.get(id) ?? 0) + segLen);
+            const childTag = parentIsBifurcation ? nextTag++ : parentTag;
+            tagMap.set(cid, childTag);
+            queue.push(cid);
+        }
+    }
+
+    const segments: Segment3D[] = [];
+    const distAttr: number[] = [];
+    const tagAttr: number[] = [];
+    for (const [id, node] of nodeMap) {
+        if (node.pid === -1) continue;
+        const parent = nodeMap.get(node.pid);
+        if (!parent) continue;
+        segments.push({
+            x1: parent.x,
+            y1: parent.y,
+            z1: parent.z,
+            x2: node.x,
+            y2: node.y,
+            z2: node.z,
+            tid: node.tid,
+        });
+        // Endpoint order matches the position buffer: parent endpoint first, child endpoint second.
+        const parentTag = tagMap.get(node.pid) ?? -1;
+        const childTag = tagMap.get(id) ?? -1;
+        // If the parent is the soma (tag -1), use the child's tag for both endpoints
+        // so the soma-anchored segments still belong visually to a branch.
+        const segTag = parentTag === -1 ? childTag : parentTag;
+        distAttr.push(distMap.get(node.pid) ?? 0);
+        tagAttr.push(segTag);
+        distAttr.push(distMap.get(id) ?? 0);
+        tagAttr.push(childTag);
+    }
+
+    const branchTags: number[] = [];
+    for (let t = 0; t < nextTag; t++) branchTags.push(t);
+
+    return {
+        segments,
+        aDistFromSoma: new Float32Array(distAttr),
+        aBranchTag: new Float32Array(tagAttr),
+        branchTags,
+    };
+}
