@@ -1,13 +1,29 @@
 // Generates an inline Neuroglancer state URL for the minnie65_public CAVE dataset.
 //
-// Viewer must be spelunker.cave-explorer.org — ngl.cave-explorer.org parses the
-// state correctly but silently fails to render neurons.
+// Hard-won lessons from porting the Python nglui/CAVEclient implementation:
 //
-// Sources need `middleauth+` even though client.info.segmentation_source() omits it.
+//   Viewer:   spelunker.cave-explorer.org — ngl.cave-explorer.org parses the state
+//             correctly but silently fails to render neuron meshes.
 //
-// Each neuron goes in its own segmentation layer ("neuron-0", "neuron-1", …)
-// rather than in the shared "segmentation" layer — that's how nglui does it and
-// is required for the mesh to render.
+//   Sources:  need `middleauth+` prefix even though client.info.segmentation_source()
+//             returns the URL without it.
+//
+//   Layers:   each neuron must go in its own segmentation layer ("neuron-<root_id>")
+//             rather than in the shared "segmentation" layer — that's how nglui does
+//             it and is required for the mesh to render.
+//
+//   Colors:   segmentColors keys are root ID strings, values are hex without '#'.
+//
+// Why dendrite/axon color split is not possible in the browser:
+//
+//   The app splits neurons by SWC `tid` (2=axon, 3/4=dendrite) for its own 3-D
+//   canvas, but SWC node IDs are sequential skeleton graph indices — not CAVE
+//   supervoxel IDs. Neuroglancer's graphene layer only understands root IDs (whole
+//   neuron) or supervoxel IDs (mesh chunks). To color compartments separately you'd
+//   need supervoxel IDs per compartment, which requires a middleauth-authenticated
+//   call to the CAVE materialization API. The browser cannot make that call without
+//   either a backend proxy (server-side CAVE token) or pre-exported
+//   supervoxel→compartment tables shipped alongside the SWC files.
 
 const VIEWER_BASE = 'https://spelunker.cave-explorer.org';
 

@@ -91,6 +91,10 @@ const IntroDialog: React.FC<Props> = ({ open, onClose, showBackground, onToggleB
                     label="Target count"
                     desc="How many target neurons to sample (1–10). Locked targets always count toward this total."
                 />
+                <Row
+                    label="Neuroglancer"
+                    desc="Opens all visible neurons in Neuroglancer for full 3D mesh inspection."
+                />
             </Section>
 
             <Divider sx={{ my: 1.5 }} />
@@ -105,6 +109,21 @@ const IntroDialog: React.FC<Props> = ({ open, onClose, showBackground, onToggleB
                     <Switch size="small" checked={showBackground} onChange={onToggleBackground} />
                     <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Show background skeletons</Typography>
                 </Box>
+            </Section>
+
+            <Divider sx={{ my: 1.5 }} />
+
+            <Section title="Neuroglancer">
+                <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+                    The <em>Neuroglancer link</em> button opens the currently visible neurons in{' '}
+                    <Link href="https://spelunker.cave-explorer.org" target="_blank" rel="noreferrer">
+                        spelunker.cave-explorer.org
+                    </Link>
+                    , showing their full 3-D mesh reconstructions. Hidden neurons are excluded. Note that Neuroglancer
+                    renders each neuron as a single mesh - it cannot split axon and dendrite into separate colors as we
+                    do here, since that requires supervoxel-level data that is only available via authenticated CAVE API
+                    access.
+                </Typography>
             </Section>
 
             <Divider sx={{ my: 1.5 }} />

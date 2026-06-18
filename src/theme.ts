@@ -3,6 +3,13 @@ import type { Theme } from '@mui/material/styles';
 
 export function createAppTheme(mode: 'light' | 'dark'): Theme {
     return createTheme({
+        components: {
+            MuiButton: {
+                styleOverrides: {
+                    root: { textTransform: 'none' },
+                },
+            },
+        },
         palette: {
             mode,
             ...(mode === 'light'

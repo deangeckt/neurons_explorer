@@ -745,7 +745,7 @@ const ExplorerPage: React.FC = () => {
                                 window.open(buildNeuroglancerUrl(neurons), '_blank');
                             }}
                         >
-                            Neuroglancer link
+                            link to Neuroglancer
                         </Button>
                     </Box>
                 )}
