@@ -41,6 +41,7 @@ import CellTypeToggles from './CellTypeToggles';
 import IntroDialog from './IntroDialog';
 import LoadingNeuron from './LoadingNeuron';
 import { ColorModeContext } from '../ColorModeContext';
+import { buildNeuroglancerUrl } from './neuroglancerUtils';
 
 const EXCLUDED_CELL_TYPES = new Set(['Unsure E', 'Unsure I']);
 
@@ -729,6 +730,23 @@ const ExplorerPage: React.FC = () => {
                                 onEditCancel={cancelEditRow}
                             />
                         ))}
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            sx={{ borderColor: 'divider', color: 'text.secondary', fontSize: 12 }}
+                            onClick={() => {
+                                const neurons = [
+                                    { id: String(info.srcId), color: renderStyles.srcDendrite.color },
+                                    ...info.dsts.map((d) => ({
+                                        id: String(d.id),
+                                        color: renderStyles.dstDendrite.color,
+                                    })),
+                                ].filter(({ id }) => !hiddenIds.has(id));
+                                window.open(buildNeuroglancerUrl(neurons), '_blank');
+                            }}
+                        >
+                            Neuroglancer link
+                        </Button>
                     </Box>
                 )}
 

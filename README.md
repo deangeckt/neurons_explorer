@@ -1,4 +1,7 @@
-# Neurons Explorer
+<h1>
+  <img src="public/logo.svg" width="64" height="64" alt="Neurons Explorer logo" style="vertical-align:middle; margin-right:10px">
+  Neurons Explorer
+</h1>
 
 [![Live Demo](https://github.com/deangeckt/neurons_explorer/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/deangeckt/neurons_explorer/actions)
 [![GitHub stars](https://img.shields.io/github/stars/deangeckt/neurons_explorer?style=social)](https://github.com/deangeckt/neurons_explorer/stargazers)
