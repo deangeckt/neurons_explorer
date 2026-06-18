@@ -187,7 +187,7 @@ export async function loadBackgroundSkeletons(): Promise<Segment3D[]> {
     const results = await Promise.all(
         ids.map(async (id) => {
             try {
-                const resp = await fetch(`${process.env.PUBLIC_URL}/background_skeletons/${id}.json`);
+                const resp = await fetch(`${process.env.PUBLIC_URL}/bg_skeletons/${id}.json`);
                 if (!resp.ok) return [];
                 const { s } = (await resp.json()) as { s: number[] };
                 const segs: Segment3D[] = [];
