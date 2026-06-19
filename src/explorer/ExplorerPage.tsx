@@ -570,7 +570,7 @@ const ExplorerPage: React.FC = () => {
                         sx={{ width: 64, height: 64 }}
                     />
                     <Typography sx={{ fontWeight: 700, fontSize: 20, color: 'primary.main', lineHeight: 1 }}>
-                        Neurons Explorer
+                        Connectivity Explorer
                     </Typography>
                 </Box>
 
@@ -745,7 +745,7 @@ const ExplorerPage: React.FC = () => {
                                 window.open(buildNeuroglancerUrl(neurons), '_blank');
                             }}
                         >
-                            link to Neuroglancer
+                            Link to Neuroglancer
                         </Button>
                     </Box>
                 )}

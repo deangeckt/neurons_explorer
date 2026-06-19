@@ -1,13 +1,13 @@
 <h1>
-  <img src="public/logo.svg" width="64" height="64" alt="Neurons Explorer logo" style="vertical-align:middle; margin-right:10px">
-  Neurons Explorer
+  <img src="public/logo.svg" width="64" height="64" alt="Connectivity Explorer logo" style="vertical-align:middle; margin-right:10px">
+  Connectivity Explorer
 </h1>
 
-[![Live Demo](https://github.com/deangeckt/neurons_explorer/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/deangeckt/neurons_explorer/actions)
-[![GitHub stars](https://img.shields.io/github/stars/deangeckt/neurons_explorer?style=social)](https://github.com/deangeckt/neurons_explorer/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/deangeckt/neurons_explorer)](https://github.com/deangeckt/neurons_explorer/issues)
+[![Live Demo](https://github.com/deangeckt/connectivity_explorer/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/deangeckt/connectivity_explorer/actions)
+[![GitHub stars](https://img.shields.io/github/stars/deangeckt/connectivity_explorer?style=social)](https://github.com/deangeckt/connectivity_explorer/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/deangeckt/connectivity_explorer)](https://github.com/deangeckt/connectivity_explorer/issues)
 
-A free, browser-based [**interactive 3D viewer**](https://deangeckt.github.io/neurons_explorer) for cortical neuron connectivity - no installation required.
+A free, browser-based [**interactive 3D viewer**](https://deangeckt.github.io/connectivity_explorer) for cortical neuron connectivity - no installation required.
 Pick a source neuron, sample its synaptic targets, and explore their skeletons and synapse locations in real time.
 
 Data is from the [MICrONS](https://www.microns-explorer.org/) cortical column dataset (v1718): ~1,300 neurons and ~146K intrinsic synapses.
@@ -18,8 +18,8 @@ Faint gray skeletons in the background are neurons from the 1 mm³ volume outsid
 ## Getting Started
 
 ```bash
-git clone https://github.com/deangeckt/neurons_explorer.git
-cd neurons_explorer
+git clone https://github.com/deangeckt/connectivity_explorer.git
+cd connectivity_explorer
 npm install
 npm start
 ```
@@ -36,14 +36,14 @@ npm run build  # production bundle
 
 ## Citation
 
-If you use Neurons Explorer in your work, please cite:
+If you use Connectivity Explorer in your work, please cite:
 
 ```bibtex
 @software{geckt2026neurons,
   author  = {Geckt, Dean},
-  title   = {Neurons Explorer: Interactive 3D Browser for Cortical Neuron Connectivity},
+  title   = {Connectivity Explorer: Interactive 3D Browser for Cortical Neuron Connectivity},
   year    = {2026},
-  url     = {https://github.com/deangeckt/neurons_explorer}
+  url     = {https://github.com/deangeckt/connectivity_explorer}
 }
 ```
 

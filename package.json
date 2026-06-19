@@ -1,6 +1,6 @@
 {
-  "name": "neurons_explorer",
-  "homepage": "https://deangeckt.github.io/neurons_explorer",
+  "name": "connectivity_explorer",
+  "homepage": "https://deangeckt.github.io/connectivity_explorer",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
