@@ -7,8 +7,8 @@
 [![GitHub stars](https://img.shields.io/github/stars/deangeckt/connectivity_explorer?style=social)](https://github.com/deangeckt/connectivity_explorer/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/deangeckt/connectivity_explorer)](https://github.com/deangeckt/connectivity_explorer/issues)
 
-A free, browser-based [**interactive 3D viewer**](https://deangeckt.github.io/connectivity_explorer) for cortical neuron connectivity - no installation required.
-Pick a source neuron, sample its synaptic targets, and explore their skeletons and synapse locations in real time.
+A free, browser-based [**interactive 3D viewer**](https://deangeckt.github.io/connectivity_explorer) for cortical neuron connectivity - no installation or login required.
+Pick a source neuron, sample its synaptic targets, and explore their skeletons and synapse locations in real time, then continue your analysis directly in Neuroglancer.
 
 Data is from the [MICrONS](https://www.microns-explorer.org/) cortical column dataset (v1718): ~1,300 neurons and ~146K intrinsic synapses.
 Faint gray skeletons in the background are neurons from the 1 mm³ volume outside the column, shown for spatial context.
