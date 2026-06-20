@@ -180,7 +180,7 @@ const ExplorerPage: React.FC = () => {
     const [neuronCount, setNeuronCount] = useState(0);
     const [synapseCount, setSynapseCount] = useState(0);
     const [introOpen, setIntroOpen] = useState(true);
-    const [neuronReady, setNeuronReady] = useState(false);
+    const [hasRenderedOnce, setHasRenderedOnce] = useState(false);
     const [showBackground, setShowBackground] = useState(true);
     const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
     const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
@@ -323,6 +323,7 @@ const ExplorerPage: React.FC = () => {
                 setRenderedSynapses(synPoints);
                 setHiddenIds(new Set());
                 setCameraKey((k) => k + 1);
+                setHasRenderedOnce(true);
 
                 const srcNeuron = neuronMapRef.current.get(srcId);
                 const dstInfo = dstIds.map((id) => {
@@ -480,10 +481,9 @@ const ExplorerPage: React.FC = () => {
     const srcIsFixed = !!(info && lockedIds.has(String(info.srcId)));
 
     // Show the firing-neuron full-screen splash until the very first skeleton
-    // render completes. After that, subsequent user-triggered renders use the
+    // render completes. Once shown, subsequent user-triggered renders use the
     // lighter in-canvas overlay so we don't kick the user back to the splash.
-    const initialRenderDone = renderedNeurons.length > 0 && !renderLoading;
-    if (!initialRenderDone) {
+    if (!hasRenderedOnce) {
         return (
             <Box
                 sx={{
@@ -494,34 +494,32 @@ const ExplorerPage: React.FC = () => {
                 }}
             >
                 <Box sx={{ position: 'absolute', inset: 0 }}>
-                    <LoadingNeuron onReady={() => setNeuronReady(true)} />
+                    <LoadingNeuron />
                 </Box>
 
-                {neuronReady && (
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            left: 0,
-                            right: 0,
-                            bottom: 56,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: 1.5,
-                            pointerEvents: 'none',
-                            animation: 'fadeInUp 0.5s ease-out both',
-                            '@keyframes fadeInUp': {
-                                from: { opacity: 0, transform: 'translateY(8px)' },
-                                to: { opacity: 1, transform: 'translateY(0)' },
-                            },
-                        }}
-                    >
-                        <CircularProgress size={32} sx={{ color: 'primary.main' }} />
-                        <Typography sx={{ color: 'text.secondary', fontSize: 16 }}>
-                            {initialLoading ? 'Loading data…' : 'Loading skeletons…'}
-                        </Typography>
-                    </Box>
-                )}
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        bottom: 56,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        pointerEvents: 'none',
+                        animation: 'fadeInUp 0.5s ease-out both',
+                        '@keyframes fadeInUp': {
+                            from: { opacity: 0, transform: 'translateY(8px)' },
+                            to: { opacity: 1, transform: 'translateY(0)' },
+                        },
+                    }}
+                >
+                    <CircularProgress size={32} sx={{ color: 'primary.main' }} />
+                    <Typography sx={{ color: 'text.secondary', fontSize: 16 }}>
+                        {initialLoading ? 'Loading data…' : 'Loading skeletons…'}
+                    </Typography>
+                </Box>
 
                 <IntroDialog
                     open={introOpen}
