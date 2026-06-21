@@ -427,6 +427,14 @@ const ExplorerPage: React.FC = () => {
             setEditRowError('ID not found in column');
             return;
         }
+        const otherIds =
+            rowKey === 'src'
+                ? info.dsts.map((d) => d.id)
+                : [info.srcId, ...info.dsts.filter((d) => String(d.id) !== rowKey).map((d) => d.id)];
+        if (otherIds.some((id) => id === newId)) {
+            setEditRowError('ID already in use');
+            return;
+        }
         if (rowKey === 'src') {
             const pinnedDsts = info.dsts.map((d) => d.id);
             doRender(
@@ -435,7 +443,7 @@ const ExplorerPage: React.FC = () => {
                 validSrcRef.current,
                 srcTypes,
                 dstTypes,
-                Math.max(pinnedDsts.length, 1),
+                Math.max(pinnedDsts.length, dstCount),
                 newId,
                 pinnedDsts.length > 0 ? pinnedDsts : undefined,
                 undefined,
@@ -632,7 +640,7 @@ const ExplorerPage: React.FC = () => {
                             </Box>
                         ))}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 18, height: 4, bgcolor: 'red', borderRadius: 1 }} />
+                            <Box sx={{ width: 10, height: 10, bgcolor: 'red', borderRadius: '50%' }} />
                             <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>synapses</Typography>
                         </Box>
                     </Box>

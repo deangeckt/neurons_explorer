@@ -45,17 +45,16 @@ export function sample(
     const srcPool = [...filterByTypes(allNeurons, srcTypes)].filter((id) => validSrcIds.has(id));
     const dstPool = filterByTypes(allNeurons, dstTypes);
 
-    if (srcPool.length === 0) return { error: 'No source neurons match the selected cell types.' };
+    if (!forceSrcId && srcPool.length === 0) return { error: 'No source neurons match the selected cell types.' };
+
+    const pickSrc = () => forceSrcId ?? srcPool[Math.floor(Math.random() * srcPool.length)];
 
     const pinned = pinnedDstIds ?? [];
     const slotsLeft = Math.max(0, dstCount - pinned.length);
 
     // If all slots are filled by pinned neurons, just compute their synapses with any valid src
     if (slotsLeft === 0) {
-        const srcId =
-            forceSrcId && srcPool.includes(forceSrcId)
-                ? forceSrcId
-                : srcPool[Math.floor(Math.random() * srcPool.length)];
+        const srcId = pickSrc();
         const dstIds = pinned.slice(0, dstCount);
         const dstSet = new Set(dstIds);
         const connectedSynapses = synapses.filter((s) => s.pre_id === srcId && dstSet.has(s.post_id));
@@ -70,10 +69,7 @@ export function sample(
     const maxTries = forceSrcId ? 1 : Math.min(srcPool.length, 20);
 
     for (let attempt = 0; attempt < maxTries; attempt++) {
-        const srcId =
-            forceSrcId && srcPool.includes(forceSrcId)
-                ? forceSrcId
-                : srcPool[Math.floor(Math.random() * srcPool.length)];
+        const srcId = pickSrc();
 
         const outSynapses = synapses.filter((s) => s.pre_id === srcId && dstPool.has(s.post_id));
         const available = [...new Set(outSynapses.map((s) => s.post_id))].filter((id) => !pinnedSet.has(String(id)));

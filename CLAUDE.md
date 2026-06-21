@@ -1,3 +1,7 @@
+# Workflow
+
+- **Never commit without being explicitly asked.** Do not run `git commit` unless the user directly requests it.
+
 # Code Conventions
 
 ## TypeScript / React
