@@ -411,10 +411,6 @@ const ExplorerPage: React.FC = () => {
             dstCount,
             forceSrcId,
             pinnedDsts.length > 0 ? pinnedDsts : undefined,
-            (srcId) => {
-                const n = neuronMapRef.current.get(srcId);
-                if (n?.cell_type && !forceSrcId) setSrcTypes(new Set([n.cell_type]));
-            },
         );
     };
 
@@ -684,7 +680,7 @@ const ExplorerPage: React.FC = () => {
                 {/* ── Selected neurons ── */}
                 {info && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.secondary' }}>
+                        <Typography sx={{ fontSize: 16, fontWeight: 600, color: 'text.secondary' }}>
                             Selected neurons
                             <Typography component="span" sx={{ fontSize: 12, color: 'text.disabled', ml: 1 }}>
                                 click ID to edit
@@ -752,7 +748,7 @@ const ExplorerPage: React.FC = () => {
 
                 {/* ── Display settings ── */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.secondary' }}>
+                    <Typography sx={{ fontSize: 16, fontWeight: 600, color: 'text.secondary' }}>
                         Display settings
                     </Typography>
                     {(Object.entries(ROLE_LABELS) as [NeuronRole, string][]).map(([role, label]) => {
@@ -808,14 +804,14 @@ const ExplorerPage: React.FC = () => {
                 <Divider />
 
                 {/* ── Add neurons ── */}
-                <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.secondary' }}>Add neurons</Typography>
+                <Typography sx={{ fontSize: 16, fontWeight: 600, color: 'text.secondary' }}>Add neurons</Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Typography sx={{ fontSize: 15, color: 'text.secondary', minWidth: 100 }}>Target count</Typography>
                     <Button
                         size="small"
                         variant="outlined"
-                        onClick={() => setDstCount((c) => Math.max(1, c - 1))}
+                        onClick={() => setDstCount((c) => Math.max(0, c - 1))}
                         sx={{ minWidth: 32, px: 0, borderColor: 'divider', color: 'text.secondary' }}
                     >
                         −
