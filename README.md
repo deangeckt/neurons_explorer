@@ -13,7 +13,13 @@ Pick a source neuron, sample its synaptic targets, and explore their skeletons a
 Data is from the [MICrONS](https://www.microns-explorer.org/) cortical column dataset (v1718): ~1,300 neurons and ~146K intrinsic synapses.
 Faint gray skeletons in the background are neurons from the 1 mm³ volume outside the column, shown for spatial context.
 
-![alt text](image.png)
+
+
+https://github.com/user-attachments/assets/e37adec4-5262-4096-a9c2-a62765b9dd87
+
+
+<img width="3836" height="1841" alt="T2" src="https://github.com/user-attachments/assets/bafbbbf1-d692-4d15-965d-c32dbc46f3d2" />
+
 
 ## Getting Started
 
